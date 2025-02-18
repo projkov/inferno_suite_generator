@@ -1,5 +1,6 @@
 require 'inferno_suite_generator/special_identifier_search_test'
 require 'inferno_suite_generator/generator/group_metadata'
+require 'inferno_suite_generator/saerch_test_properties'
 
 module AUCoreTestKit
   module <%= module_name %>
@@ -13,13 +14,13 @@ module AUCoreTestKit
       optional
   <% end %>
       def self.properties
-        @properties ||= SearchTestProperties.new(
+        @properties ||= InfenroSuiteGenerator::SearchTestProperties.new(
   <%= search_test_properties_string %>
         )
       end
 
       def self.metadata
-        @metadata ||= Generator::GroupMetadata.new(YAML.load_file(File.join(__dir__, 'metadata.yml'), aliases: true))
+        @metadata ||= InfernoSuiteGenerator::Generator::GroupMetadata.new(YAML.load_file(File.join(__dir__, 'metadata.yml'), aliases: true))
       end
 
       def scratch_resources
