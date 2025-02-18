@@ -25,7 +25,7 @@ Gem::Specification.new do |spec|
     Dir['lib/**/*.rb'],
     Dir['lib/**/*.json'],
     Dir['lib/**/*.tgz'],
-    Dir['lib/**/*.yml'],
+    Dir['lib/**/*.yml']
   ].flatten
   spec.bindir = "exe"
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
