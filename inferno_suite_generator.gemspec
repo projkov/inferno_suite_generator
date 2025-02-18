@@ -5,8 +5,8 @@ require_relative "lib/inferno_suite_generator/version"
 Gem::Specification.new do |spec|
   spec.name = "inferno_suite_generator"
   spec.version = InfernoSuiteGenerator::VERSION
-  spec.authors = ["Pavel Rozhkov"]
-  spec.email = ["prozskov@gmail.com"]
+  spec.authors = ["Pavel Rozhkov", "Ilya Beda"]
+  spec.email = ["pavel.r@beda.software", 'ilya@beda.software']
 
   spec.summary = "Write a short summary, because RubyGems requires one."
   spec.description = "Write a longer description or delete this line."
