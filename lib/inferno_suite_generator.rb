@@ -19,6 +19,7 @@ require_relative 'inferno_suite_generator/generator/chain_search_test_generator'
 require_relative 'inferno_suite_generator/generator/special_identifier_search_test_generator'
 require_relative 'inferno_suite_generator/generator/special_identifiers_chain_search_test_generator'
 require_relative 'inferno_suite_generator/generator/include_search_test_generator'
+require_relative 'inferno_suite_generator/search_test.rb'
 require_relative "inferno_suite_generator/version"
 
 module InfernoSuiteGenerator
