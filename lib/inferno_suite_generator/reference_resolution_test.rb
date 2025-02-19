@@ -33,7 +33,9 @@ module InfernoSuiteGenerator
       saved_reference = resolved_references.find { |item| item[:reference] == reference.reference }
 
       if saved_reference.present?
-        saved_reference[:profiles] << target_profile if target_profile.present? && !saved_reference[:profiles].include?(target_profile)
+        if target_profile.present? && !saved_reference[:profiles].include?(target_profile)
+          saved_reference[:profiles] << target_profile
+        end
       else
         saved_reference = {
           reference: reference.reference,

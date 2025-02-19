@@ -69,7 +69,8 @@ module InfernoSuiteGenerator
 
     def run_provenance_revinclude_search_test
       # TODO: skip if not supported?
-      conditional_skip_with_msg !any_valid_search_params?(all_provenance_revinclude_search_params), unable_to_resolve_params_message
+      conditional_skip_with_msg !any_valid_search_params?(all_provenance_revinclude_search_params),
+                                unable_to_resolve_params_message
 
       provenance_resources =
         all_provenance_revinclude_search_params.flat_map do |_patient_id, params_list|
@@ -160,7 +161,12 @@ module InfernoSuiteGenerator
     end
 
     def perform_search(params, patient_id)
-      search_params = is_count_available_for_resource_type?(resource_type, params) == false ? params : params.merge({ _count: 10 })
+      search_params = if is_count_available_for_resource_type?(resource_type,
+                                                               params) == false
+                        params
+                      else
+                        params.merge({ _count: 10 })
+                      end
       fhir_search(resource_type, params: search_params)
 
       if SearchTestHelpers.search_by_reference?(search_params)
@@ -171,7 +177,12 @@ module InfernoSuiteGenerator
       perform_search_with_status(params, patient_id) if response[:status] == 400 && possible_status_search?
 
       check_search_response
-      fetch_all_bundled_resources = is_count_available_for_resource_type?(resource_type, params) == false ? fetch_all_bundled_resources() : fetch_all_bundled_resources(max_pages: 2)
+      fetch_all_bundled_resources = if is_count_available_for_resource_type?(resource_type,
+                                                                             params) == false
+                                      fetch_all_bundled_resources()
+                                    else
+                                      fetch_all_bundled_resources(max_pages: 2)
+                                    end
       resources_returned =
         fetch_all_bundled_resources.select { |resource| resource.resourceType == resource_type }
 
@@ -331,7 +342,14 @@ module InfernoSuiteGenerator
         required_comparators(name).each do |comparator|
           paths = search_param_paths(name).first
           date_element = find_a_value_at(scratch_resources_for_patient(patient_id), paths)
-          params_with_comparator = params.merge(name => name != 'birthdate' ? date_comparator_value(comparator, date_element) : birthdate_comparator_value(comparator, date_element))
+          params_with_comparator = params.merge(name => if name != 'birthdate'
+                                                          date_comparator_value(comparator,
+                                                                                date_element)
+                                                        else
+                                                          birthdate_comparator_value(
+                                                            comparator, date_element
+                                                          )
+                                                        end)
 
           search_and_check_response(params_with_comparator)
 
@@ -433,7 +451,12 @@ module InfernoSuiteGenerator
       definition = metadata.search_definitions[param_name]
       return [] if definition.blank?
 
-      definition[:multiple_or] == 'SHALL' || definition[:multiple_or] == 'SHOULD' ? [definition[:values].join(',')] : Array.wrap(definition[:values])
+      if %w[SHALL
+            SHOULD].include?(definition[:multiple_or])
+        [definition[:values].join(',')]
+      else
+        Array.wrap(definition[:values])
+      end
     end
 
     def default_search_values_clean(param_name)
@@ -491,8 +514,14 @@ module InfernoSuiteGenerator
             end
           end
         else
-          resources_arr = all_search_params.map { |patient_id, _params_list| scratch_resources_for_patient(patient_id) }.flatten
-          resources_arr = scratch_resources[:all].filter { |r| r.resourceType == resource_type } if resources_arr.empty? && search_by_target_resource_data
+          resources_arr = all_search_params.map do |patient_id, _params_list|
+            scratch_resources_for_patient(patient_id)
+          end.flatten
+          if resources_arr.empty? && search_by_target_resource_data
+            resources_arr = scratch_resources[:all].filter do |r|
+              r.resourceType == resource_type
+            end
+          end
           existing_values = extract_existing_values_safety(resources_arr, param_name)
 
           if existing_values.length > 1
@@ -540,11 +569,17 @@ module InfernoSuiteGenerator
       base_resources_with_external_reference =
         base_resources
         .select { |resource| resource&.to_hash&.[](include_param['paths'].first)&.present? }
-        .reject { |resource| resource&.to_hash&.[](include_param['paths'].first)&.fetch('reference', '')&.start_with?('#') }
+        .reject do |resource|
+          resource&.to_hash&.[](include_param['paths'].first)&.fetch('reference',
+                                                                     '')&.start_with?('#')
+        end
 
       contained_resources =
         base_resources
-        .select { |resource| resource&.to_hash&.[](include_param['paths'].first)&.fetch('reference', '')&.start_with?('#') }
+        .select do |resource|
+          resource&.to_hash&.[](include_param['paths'].first)&.fetch('reference',
+                                                                     '')&.start_with?('#')
+        end
         .flat_map(&:contained)
         .select { |resource| resource.resourceType == target_resource_type }
 
@@ -565,13 +600,15 @@ module InfernoSuiteGenerator
 
       matched_base_resources = base_resources_with_external_reference.select do |base_resource|
         included_resources.any? do |resource_reference|
-          is_reference_match?(base_resource&.to_hash&.[](include_param['paths'].first)&.fetch('reference', ''), resource_reference)
+          is_reference_match?(base_resource&.to_hash&.[](include_param['paths'].first)&.fetch('reference', ''),
+                              resource_reference)
         end
       end
 
       not_matched_included_resources = included_resources.select do |resource_reference|
         matched_base_resources.none? do |base_resource|
-          is_reference_match?(base_resource&.to_hash&.[](include_param['paths'].first)&.fetch('reference', ''), resource_reference)
+          is_reference_match?(base_resource&.to_hash&.[](include_param['paths'].first)&.fetch('reference', ''),
+                              resource_reference)
         end
       end
 
@@ -704,7 +741,9 @@ module InfernoSuiteGenerator
     def no_resources_skip_message(resource_type = self.resource_type)
       msg = "No #{resource_type} resources appear to be available"
 
-      msg.concat(" with the following Device Type Code filter: #{implantable_device_codes}") if resource_type == 'Device' && implantable_device_codes.present?
+      if resource_type == 'Device' && implantable_device_codes.present?
+        msg.concat(" with the following Device Type Code filter: #{implantable_device_codes}")
+      end
 
       "#{msg}. Please use patients with more information"
     end
@@ -861,7 +900,7 @@ module InfernoSuiteGenerator
       resources.each do |resource|
         references_to_save(containing_resource_type).each do |reference_to_save|
           resolve_path(resource, reference_to_save[:path])
-            .select { |reference| reference.is_a?(FHIR::Reference) && !reference.contained? && reference.reference.present?}
+            .select { |reference| reference.is_a?(FHIR::Reference) && !reference.contained? && reference.reference.present? }
             .each do |reference|
               resource_type = reference.resource_class.name.demodulize
               need_to_save = reference_to_save[:resources].include?(resource_type)

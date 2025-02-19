@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require_relative 'value_extractor'
-require_relative 'must_support_metadata_extractor_au_core_3'
 
 module InfernoSuiteGenerator
   class Generator
@@ -333,29 +332,6 @@ module InfernoSuiteGenerator
         remove_observation_method_attribute
         remove_observation_value_attribute
         remove_lipid_result_attributes
-        # remove_specimen_attribute
-
-        case profile.version
-        when '3.1.1'
-          MustSupportMetadataExtractorAUCore3.new(profile, @must_supports).handle_special_cases
-        when '4.0.0'
-          MustSupportMetadataExtractorAUCore4.new(profile, @must_supports).handle_special_cases
-        when '5.0.1'
-          MustSupportMetadataExtractorAUCore5.new(profile, @must_supports).handle_special_cases
-        when '6.1.0'
-          MustSupportMetadataExtractorAUCore6.new(profile, @must_supports).handle_special_cases
-        when '7.0.0-ballot'
-          MustSupportMetadataExtractorAUCore7.new(profile, @must_supports).handle_special_cases
-        end
-      end
-
-      def remove_specimen_attribute
-        # TODO: Temporary solution https://github.com/hl7au/au-fhir-core-inferno/issues/18
-        return unless profile.id == 'au-core-diagnosticresult-path'
-
-        @must_supports[:elements].delete_if do |element|
-          ['specimen'].include? element[:path]
-        end
       end
 
       def remove_lipid_result_attributes
@@ -451,11 +427,6 @@ module InfernoSuiteGenerator
         end
       end
 
-      # ONC and AU Core 4.0.0 both clarified that health IT developers that always provide HL7 FHIR "observation" values
-      # are not required to demonstrate Health IT Module support for "dataAbsentReason" elements.
-      # Remove MS check for dataAbsentReason and component.dataAbsentReason from vital sign profiles and observation lab profile
-      # Smoking status profile does not have MS on dataAbsentReason. It is safe to use profile.type == 'Observation'
-      # Since AU Core 5.0.1, Blood Pressure profile restores component.dataAbsentReason as MustSupport.
       def remove_observation_data_absent_reason
         return if is_blood_pressure?
 

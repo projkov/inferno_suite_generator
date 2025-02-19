@@ -6,10 +6,11 @@ require_relative 'group_metadata_extractor'
 module InfernoSuiteGenerator
   class Generator
     class IGMetadataExtractor
-      attr_accessor :ig_resources, :metadata
+      attr_accessor :ig_resources, :metadata, :suite_config
 
-      def initialize(ig_resources)
+      def initialize(ig_resources, suite_config)
         self.ig_resources = ig_resources
+        self.suite_config = suite_config
         add_missing_supported_profiles
         remove_extra_supported_profiles
         self.metadata = IGMetadata.new
@@ -73,7 +74,7 @@ module InfernoSuiteGenerator
             supported_profile = supported_profile.split('|').first
             next if profile_arr_to_skip.include?(supported_profile)
 
-            GroupMetadataExtractor.new(resource, supported_profile, metadata, ig_resources).group_metadata
+            GroupMetadataExtractor.new(resource, supported_profile, metadata, ig_resources, suite_config).group_metadata
           end
         end.compact
 
@@ -81,7 +82,7 @@ module InfernoSuiteGenerator
           next unless resource.profile.present?
           next if profile_arr_to_skip.include?(resource.profile)
 
-          GroupMetadataExtractor.new(resource, resource.profile, metadata, ig_resources).group_metadata
+          GroupMetadataExtractor.new(resource, resource.profile, metadata, ig_resources, suite_config).group_metadata
         end.compact
 
         metadata.groups = supported_profile_groups + profile_groups

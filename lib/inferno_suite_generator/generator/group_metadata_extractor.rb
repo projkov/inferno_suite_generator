@@ -9,13 +9,14 @@ require_relative 'terminology_binding_metadata_extractor'
 module InfernoSuiteGenerator
   class Generator
     class GroupMetadataExtractor
-      attr_accessor :resource_capabilities, :profile_url, :ig_metadata, :ig_resources
+      attr_accessor :resource_capabilities, :profile_url, :ig_metadata, :ig_resources, :suite_config
 
-      def initialize(resource_capabilities, profile_url, ig_metadata, ig_resources)
+      def initialize(resource_capabilities, profile_url, ig_metadata, ig_resources, suite_config)
         self.resource_capabilities = resource_capabilities
         self.profile_url = profile_url
         self.ig_metadata = ig_metadata
         self.ig_resources = ig_resources
+        self.suite_config = suite_config
       end
 
       def group_metadata
@@ -103,7 +104,7 @@ module InfernoSuiteGenerator
       ].freeze
 
       ALL_VERSION_PATIENT_FIRST_PROFILES = [
-        'http://hl7.org.au/fhir/core/StructureDefinition/au-core-observation',
+        'http://hl7.org.au/fhir/core/StructureDefinition/au-core-observation'
       ].freeze
 
       ALL_VERSION_ID_FIRST_PROFILES = [
@@ -195,7 +196,7 @@ module InfernoSuiteGenerator
           .split('-')
           .map(&:capitalize)
           .join
-          .gsub('AUCore', "AUCore#{ig_metadata.reformatted_version}")
+          .gsub(suite_config[:test_module_name], "#{suite_config[:test_module_name]}#{ig_metadata.reformatted_version}")
           .concat('Sequence')
       end
 
@@ -222,7 +223,9 @@ module InfernoSuiteGenerator
       def title
         title = profile.title.gsub(/AU\s*Core\s*/, '').gsub(/\s*Profile/, '').strip
 
-        title = "#{resource} #{title.split(resource).map(&:strip).join(' ')}" if Naming.resources_with_multiple_profiles.include?(resource) && !title.start_with?(resource) && version != 'v3.1.1'
+        if Naming.resources_with_multiple_profiles.include?(resource) && !title.start_with?(resource) && version != 'v3.1.1'
+          title = "#{resource} #{title.split(resource).map(&:strip).join(' ')}"
+        end
 
         title
       end
@@ -327,7 +330,7 @@ module InfernoSuiteGenerator
           .map do |reference_definition|
             {
               path: reference_definition.path,
-              profiles: reference_definition.type.first.targetProfile,
+              profiles: reference_definition.type.first.targetProfile
             }
           end
       end

@@ -12,8 +12,10 @@ module InfernoSuiteGenerator
                      .reject { |group| SpecialCases.exclude_group? group }
                      .select { |group| group.searches.present? }
                      .each do |group|
-            group.searches.each { |search| new(group, search, base_output_dir,
-                                               suite_config).generate }
+            group.searches.each do |search|
+              new(group, search, base_output_dir,
+                  suite_config).generate
+            end
           end
         end
       end
@@ -53,7 +55,6 @@ module InfernoSuiteGenerator
       end
 
       def test_kit_module_name
-        puts "SUITE CONFIG IG: #{suite_config}"
         suite_config[:test_kit_module_name]
       end
 
@@ -252,8 +253,10 @@ module InfernoSuiteGenerator
         # we shall keep special cases to provide functionality for the "_include" tests.
         # https://jira.csiro.au/browse/ST-400
         special_cases = {
-          'MedicationRequest:medication' => { 'parameter' => 'MedicationRequest:medication', 'target_resource' => 'Medication', 'paths' => ['medicationReference'] },
-          'MedicationStatement:medication' => { 'parameter' => 'MedicationStatement:medication', 'target_resource' => 'Medication', 'paths' => ['medicationReference'] }
+          'MedicationRequest:medication' => { 'parameter' => 'MedicationRequest:medication',
+                                              'target_resource' => 'Medication', 'paths' => ['medicationReference'] },
+          'MedicationStatement:medication' => { 'parameter' => 'MedicationStatement:medication',
+                                                'target_resource' => 'Medication', 'paths' => ['medicationReference'] }
         }
         include_params_list = group_metadata.include_params
         search_definitions = group_metadata.search_definitions

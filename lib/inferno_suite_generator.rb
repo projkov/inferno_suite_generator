@@ -45,7 +45,7 @@ module InfernoSuiteGenerator
       extract_metadata
       generate_search_tests
       ReadTestGenerator.generate(ig_metadata, base_output_dir, suite_config)
-      ProvenanceRevincludeSearchTestGenerator.generate(ig_metadata, base_output_dir)
+      ProvenanceRevincludeSearchTestGenerator.generate(ig_metadata, base_output_dir, suite_config)
       IncludeSearchTestGenerator.generate(ig_metadata, base_output_dir, suite_config)
       ValidationTestGenerator.generate(ig_metadata, base_output_dir, suite_config)
       MustSupportTestGenerator.generate(ig_metadata, base_output_dir, suite_config)
@@ -56,7 +56,7 @@ module InfernoSuiteGenerator
     end
 
     def extract_metadata
-      self.ig_metadata = IGMetadataExtractor.new(ig_resources).extract
+      self.ig_metadata = IGMetadataExtractor.new(ig_resources, suite_config).extract
 
       FileUtils.mkdir_p(base_output_dir)
       File.open(File.join(base_output_dir, 'metadata.yml'), 'w') do |file|
@@ -70,7 +70,7 @@ module InfernoSuiteGenerator
 
     def load_ig_package
       FHIR.logger = Logger.new('/dev/null')
-      self.ig_resources = IGLoader.new(ig_file_name).load
+      self.ig_resources = IGLoader.new(ig_file_name, suite_config).load
     end
 
     def generate_search_tests

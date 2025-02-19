@@ -74,7 +74,9 @@ module InfernoSuiteGenerator
             # full_paths = full_paths.map(&:strip)
 
             # There is a bug in AU Core 5 asserted-date search parameter. See FHIR-40573
-            remove_additional_extension_from_asserted_date(full_paths) if param.respond_to?(:version) && param.version == '5.0.1' && name == 'asserted-date'
+            if param.respond_to?(:version) && param.version == '5.0.1' && name == 'asserted-date'
+              remove_additional_extension_from_asserted_date(full_paths)
+            end
 
             full_paths
           end
@@ -138,7 +140,8 @@ module InfernoSuiteGenerator
         # NOTE: https://github.com/hl7au/au-fhir-core-inferno/issues/48
         special_cases_resources = %w[Observation Condition Encounter Immunization MedicationRequest Patient Procedure]
         special_cases_comparators = %w[gt lt ge le]
-        special_cases_param_ids = %w[clinical-date Condition-onset-date clinical-date MedicationRequest-authoredon individual-birthdate]
+        special_cases_param_ids = %w[clinical-date Condition-onset-date clinical-date MedicationRequest-authoredon
+                                     individual-birthdate]
 
         {}.tap do |comparators|
           param.comparator&.each_with_index do |comparator, index|
@@ -250,14 +253,17 @@ module InfernoSuiteGenerator
       def values
         fixed_diagnostic_result_values = %w[251739003 24701-5]
         fixed_date_value = %w[ge1950-01-01 le2050-01-01 gt1950-01-01 lt2050-01-01]
-        fixed_datetime_value = %w[ge1950-01-01T00:00:00.000Z le2050-01-01T23:59:59.999Z gt1950-01-01T00:00:00.000Z lt2050-01-01T23:59:59.999Z]
+        fixed_datetime_value = %w[ge1950-01-01T00:00:00.000Z le2050-01-01T23:59:59.999Z gt1950-01-01T00:00:00.000Z
+                                  lt2050-01-01T23:59:59.999Z]
         # NOTE: In the current step we don't need to check the correct content of the response.
         # We should care about the correct structure of the request. In this current case we use dates just
         # to check that server can make a response for the request.
         case group_metadata[:resource]
         when 'Observation'
           return fixed_datetime_value if param_hash['id'] == 'clinical-date'
-          return fixed_diagnostic_result_values if param_hash['id'] =='clinical-code' && group_metadata[:profile_url] == 'http://hl7.org.au/fhir/core/StructureDefinition/au-core-diagnosticresult'
+          if param_hash['id'] == 'clinical-code' && group_metadata[:profile_url] == 'http://hl7.org.au/fhir/core/StructureDefinition/au-core-diagnosticresult'
+            return fixed_diagnostic_result_values
+          end
         when 'Condition'
           return fixed_datetime_value if param_hash['id'] == 'Condition-onset-date'
         when 'Encounter'
@@ -337,4 +343,3 @@ module InfernoSuiteGenerator
     end
   end
 end
-

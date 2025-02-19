@@ -7,20 +7,21 @@ module InfernoSuiteGenerator
   class Generator
     class ProvenanceRevincludeSearchTestGenerator
       class << self
-        def generate(ig_metadata, base_output_dir)
+        def generate(ig_metadata, base_output_dir, suite_config)
           ig_metadata.groups
                      .reject { |group| SpecialCases.exclude_group? group }
                      .select { |group| group.revincludes.include? 'Provenance:target' }
-                     .each { |group| new(group, group.searches.first, base_output_dir).generate }
+                     .each { |group| new(group, group.searches.first, base_output_dir, suite_config).generate }
         end
       end
 
-      attr_accessor :group_metadata, :search_metadata, :base_output_dir
+      attr_accessor :group_metadata, :search_metadata, :base_output_dir, :suite_config
 
-      def initialize(group_metadata, search_metadata, base_output_dir)
+      def initialize(group_metadata, search_metadata, base_output_dir, suite_config)
         self.group_metadata = group_metadata
         self.search_metadata = search_metadata
         self.base_output_dir = base_output_dir
+        self.suite_config = suite_config
       end
 
       def template
@@ -48,7 +49,7 @@ module InfernoSuiteGenerator
       end
 
       def test_id
-        "au_core_#{group_metadata.reformatted_version}_#{profile_identifier}_#{search_identifier}_search_test"
+        "#{suite_config[:test_id_prefix]}_#{group_metadata.reformatted_version}_#{profile_identifier}_#{search_identifier}_search_test"
       end
 
       def search_identifier
@@ -64,7 +65,7 @@ module InfernoSuiteGenerator
       end
 
       def module_name
-        "AUCore#{group_metadata.reformatted_version.upcase}"
+        "#{suite_config[:test_module_name]}#{group_metadata.reformatted_version.upcase}"
       end
 
       def resource_type

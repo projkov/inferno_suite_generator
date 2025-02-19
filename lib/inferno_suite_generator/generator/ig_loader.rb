@@ -11,10 +11,11 @@ require_relative 'ig_resources'
 module InfernoSuiteGenerator
   class Generator
     class IGLoader
-      attr_accessor :ig_file_name
+      attr_accessor :ig_file_name, :suite_config
 
-      def initialize(ig_file_name)
+      def initialize(ig_file_name, suite_config)
         self.ig_file_name = ig_file_name
+        self.suite_config = suite_config
       end
 
       def ig_resources
@@ -52,7 +53,7 @@ module InfernoSuiteGenerator
 
           ig_resources.add(resource)
         end
-        json_files = Dir.glob(File.join(Dir.pwd, 'lib', 'au_core_test_kit', 'igs', '*.json'))
+        json_files = Dir.glob(File.join(Dir.pwd, 'lib', suite_config[:gem_name], 'igs', '*.json'))
         json_files.each do |file_path|
           file_content = File.read(file_path)
           bundle = FHIR.from_contents(file_content)

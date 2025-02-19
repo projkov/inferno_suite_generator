@@ -82,11 +82,11 @@ module InfernoSuiteGenerator
       def handle_special_cases
         # NOTE: https://github.com/hl7au/au-fhir-core-inferno/issues/57
         profile_url = group_metadata[:profile_url]
-        if profile_url == 'http://hl7.org.au/fhir/core/StructureDefinition/au-core-medicationrequest'
-          @searches.map do |search|
-            if search[:names] == ["patient", "intent", "authoredon"] && search[:expectation] == "SHALL"
-              search[:expectation] = "SHOULD"
-            end
+        return unless profile_url == 'http://hl7.org.au/fhir/core/StructureDefinition/au-core-medicationrequest'
+
+        @searches.map do |search|
+          if search[:names] == %w[patient intent authoredon] && search[:expectation] == 'SHALL'
+            search[:expectation] = 'SHOULD'
           end
         end
       end

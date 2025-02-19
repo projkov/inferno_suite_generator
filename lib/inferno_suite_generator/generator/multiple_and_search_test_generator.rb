@@ -13,8 +13,10 @@ module InfernoSuiteGenerator
                      .select { |group| group.searches.present? }
                      .each do |group|
             group.search_definitions.each_key do |search_key|
-              new(search_key.to_s, group, group.search_definitions[search_key],
-                  base_output_dir, suite_config).generate if group.search_definitions[search_key].key?(:multiple_and) && search_key.to_s != 'patient'
+              if group.search_definitions[search_key].key?(:multiple_and) && search_key.to_s != 'patient'
+                new(search_key.to_s, group, group.search_definitions[search_key],
+                    base_output_dir, suite_config).generate
+              end
             end
           end
         end
@@ -122,7 +124,7 @@ module InfernoSuiteGenerator
       end
 
       def optional?
-        conformance_expectation == 'SHOULD' || conformance_expectation == 'MAY'
+        %w[SHOULD MAY].include?(conformance_expectation)
       end
 
       def search_definition(name)
@@ -185,7 +187,10 @@ module InfernoSuiteGenerator
             properties[:multiple_and_search_params] =
               required_multiple_and_search_params_string
           end
-          properties[:optional_multiple_and_search_params] = optional_multiple_and_search_params_string if optional_multiple_and_search_params.present?
+          if optional_multiple_and_search_params.present?
+            properties[:optional_multiple_and_search_params] =
+              optional_multiple_and_search_params_string
+          end
           properties[:search_by_target_resource_data] = 'true' if Helpers.test_on_target_resource_data?(
             SpecialCases.multiple_or_and_search_by_target_resource,
             resource_type, search_param_names
@@ -194,6 +199,7 @@ module InfernoSuiteGenerator
       end
 
       def url_version
+        puts "GROUP METADATA VERSION IS #{group_metadata.version}"
         case group_metadata.version
         when 'v0.3.0-ballot'
           '0.3.0-ballot'
@@ -217,7 +223,8 @@ module InfernoSuiteGenerator
       end
 
       def description
-        Helpers.multiple_test_description('AND', conformance_expectation, search_param_name_string, resource_type, url_version)
+        Helpers.multiple_test_description('AND', conformance_expectation, search_param_name_string, resource_type,
+                                          url_version, suite_config)
       end
     end
   end

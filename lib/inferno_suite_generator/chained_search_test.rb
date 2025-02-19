@@ -72,7 +72,8 @@ module InfernoSuiteGenerator
       existing_values.include? identifier_to_test[:patient_id]
     end
 
-    def run_chain_search_test_clean(search_param, patient_id_list, all_patients_resources, attr_paths, target_identifier)
+    def run_chain_search_test_clean(search_param, patient_id_list, all_patients_resources, attr_paths,
+                                    target_identifier)
       passed = false
 
       identifiers_to_test = all_chain_identifier_values(
@@ -86,7 +87,9 @@ module InfernoSuiteGenerator
         next if identifier_to_test.nil?
 
         search_and_check_response({ search_param => "#{identifier_to_test[:identifier].system}|#{identifier_to_test[:identifier].value}" })
-        result = returned_resources_is_valid?(fetch_all_bundled_resources.select { |resource| resource.resourceType == resource_type }, identifier_to_test, attr_paths)
+        result = returned_resources_is_valid?(fetch_all_bundled_resources.select do |resource|
+          resource.resourceType == resource_type
+        end, identifier_to_test, attr_paths)
         next unless result
 
         passed = true

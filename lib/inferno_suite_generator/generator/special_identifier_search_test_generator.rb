@@ -10,26 +10,30 @@ module InfernoSuiteGenerator
       class << self
         def generate(ig_metadata, base_output_dir, suite_config)
           ig_metadata.groups.reject { |group| SpecialCases.exclude_group? group }
-            .select { |group| ['au_core_patient', 'au_core_practitioner', 'au_core_organization', 'au_core_practitionerrole'].include? group.name }
-            .select { |group| group.searches.present? }
-            .each do |group|
-              group.searches.each do |search|
-                next unless search[:names].include? 'identifier'
-                identifier_arr =
-                  case group.name
-                  when 'au_core_patient'
-                    SpecialCases.patient_au_identifiers
-                  when 'au_core_practitioner'
-                    SpecialCases.practitioner_au_identifiers
-                  when 'au_core_practitionerrole'
-                    SpecialCases.practitionerrole_au_identifiers
-                  when 'au_core_organization'
-                    SpecialCases.organization_au_identifiers
-                  end
-                identifier_arr.each do |special_identifier|
-                  new(group, search, base_output_dir, special_identifier, suite_config).generate
+                     .select do |group|
+            %w[au_core_patient au_core_practitioner au_core_organization
+               au_core_practitionerrole].include? group.name
+          end
+                     .select { |group| group.searches.present? }
+                     .each do |group|
+            group.searches.each do |search|
+              next unless search[:names].include? 'identifier'
+
+              identifier_arr =
+                case group.name
+                when 'au_core_patient'
+                  SpecialCases.patient_au_identifiers
+                when 'au_core_practitioner'
+                  SpecialCases.practitioner_au_identifiers
+                when 'au_core_practitionerrole'
+                  SpecialCases.practitionerrole_au_identifiers
+                when 'au_core_organization'
+                  SpecialCases.organization_au_identifiers
                 end
+              identifier_arr.each do |special_identifier|
+                new(group, search, base_output_dir, special_identifier, suite_config).generate
               end
+            end
           end
         end
       end
