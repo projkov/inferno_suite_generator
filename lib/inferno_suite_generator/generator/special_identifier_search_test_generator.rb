@@ -8,8 +8,7 @@ module InfernoSuiteGenerator
   class Generator
     class SpecialIdentifierSearchTestGenerator < SearchTestGenerator
       class << self
-        def generate(ig_metadata, base_output_dir, test_module_name, test_id_prefix,
-                                   test_kit_module_name)
+        def generate(ig_metadata, base_output_dir, suite_config)
           ig_metadata.groups.reject { |group| SpecialCases.exclude_group? group }
             .select { |group| ['au_core_patient', 'au_core_practitioner', 'au_core_organization', 'au_core_practitionerrole'].include? group.name }
             .select { |group| group.searches.present? }
@@ -28,8 +27,7 @@ module InfernoSuiteGenerator
                     SpecialCases.organization_au_identifiers
                   end
                 identifier_arr.each do |special_identifier|
-                  new(group, search, base_output_dir, test_module_name, test_id_prefix,
-                                   test_kit_module_name, special_identifier).generate
+                  new(group, search, base_output_dir, special_identifier, suite_config).generate
                 end
               end
           end
@@ -37,13 +35,10 @@ module InfernoSuiteGenerator
       end
 
       attr_accessor :group_metadata, :search_metadata, :base_output_dir,
-                    :test_module_name, :test_id_prefix, :test_kit_module_name,
-                    :special_identifier
+                    :special_identifier, :suite_config
 
-      def initialize(group_metadata, search_metadata, base_output_dir, test_module_name, test_id_prefix,
-                                   test_kit_module_name, special_identifier)
-        super(group_metadata, search_metadata, base_output_dir,
-              test_module_name, test_id_prefix, test_kit_module_name)
+      def initialize(group_metadata, search_metadata, base_output_dir, special_identifier, suite_config)
+        super(group_metadata, search_metadata, base_output_dir, suite_config)
         self.special_identifier = special_identifier
       end
 
@@ -51,8 +46,16 @@ module InfernoSuiteGenerator
         @template ||= File.read(File.join(__dir__, '..', 'templates', 'special_identifier_search.rb.erb'))
       end
 
+      def test_kit_module_name
+        suite_config[:test_kit_module_name]
+      end
+
       def test_id
-        "au_core_#{group_metadata.reformatted_version}_#{profile_identifier}_#{search_identifier}_#{special_identifier[:display].delete('-').downcase}_search_test"
+        "#{suite_config[:test_id_prefix]}_#{group_metadata.reformatted_version}_#{profile_identifier}_#{search_identifier}_#{special_identifier[:display].delete('-').downcase}_search_test"
+      end
+
+      def module_name
+        "#{suite_config[:test_module_name]}#{group_metadata.reformatted_version.upcase}"
       end
 
       def class_name

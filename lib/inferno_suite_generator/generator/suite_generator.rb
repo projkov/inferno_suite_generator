@@ -7,16 +7,17 @@ module InfernoSuiteGenerator
   class Generator
     class SuiteGenerator
       class << self
-        def generate(ig_metadata, base_output_dir)
-          new(ig_metadata, base_output_dir).generate
+        def generate(ig_metadata, base_output_dir, suite_config)
+          new(ig_metadata, base_output_dir, suite_config).generate
         end
       end
 
-      attr_accessor :ig_metadata, :base_output_dir
+      attr_accessor :ig_metadata, :base_output_dir, :suite_config
 
-      def initialize(ig_metadata, base_output_dir)
+      def initialize(ig_metadata, base_output_dir, suite_config)
         self.ig_metadata = ig_metadata
         self.base_output_dir = base_output_dir
+        self.suite_config = suite_config
       end
 
       def version_specific_message_filters
@@ -31,16 +32,20 @@ module InfernoSuiteGenerator
         @output ||= ERB.new(template).result(binding)
       end
 
+      def test_kit_module_name
+        suite_config[:test_kit_module_name]
+      end
+
       def base_output_file_name
-        'au_core_test_suite.rb'
+        suite_config[:base_output_file_name]
       end
 
       def class_name
-        'AUCoreTestSuite'
+        suite_config[:test_suite_class_name]
       end
 
       def module_name
-        "AUCore#{ig_metadata.reformatted_version.upcase}"
+        "#{suite_config[:test_module_name]}#{ig_metadata.reformatted_version.upcase}"
       end
 
       def output_file_name
@@ -48,20 +53,20 @@ module InfernoSuiteGenerator
       end
 
       def suite_id
-        "au_core_#{ig_metadata.reformatted_version}"
+        "#{suite_config[:test_id_prefix]}_#{ig_metadata.reformatted_version}"
       end
 
       def fhir_api_group_id
-        "au_core_#{ig_metadata.reformatted_version}_fhir_api"
+        "#{suite_config[:test_id_prefix]}_#{ig_metadata.reformatted_version}_fhir_api"
       end
 
       def title
-        "AU Core #{ig_metadata.ig_version}"
+        "#{suite_config[:title]} #{ig_metadata.ig_version}"
       end
 
       def ig_identifier
         version = ig_metadata.ig_version[1..] # Remove leading 'v'
-        "hl7.fhir.au.core##{version}"
+        "#{suite_config[:ig_identifier]}##{version}"
       end
 
       def ig_link

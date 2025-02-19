@@ -8,7 +8,7 @@ module InfernoSuiteGenerator
   class Generator
     class SpecialIdentifiersChainSearchTestGenerator < ChainSearchTestGenerator
       class << self
-        def generate(ig_metadata, base_output_dir)
+        def generate(ig_metadata, base_output_dir, suite_config)
           ig_metadata.groups
                      .select { |group| group.searches.present? }
                      .each do |group|
@@ -26,7 +26,8 @@ module InfernoSuiteGenerator
                     group.search_definitions[search_key],
                     base_output_dir,
                     chain_item,
-                    target_identifier
+                    target_identifier,
+                    suite_config
                   ).generate
                 end
               end
@@ -35,15 +36,18 @@ module InfernoSuiteGenerator
         end
       end
 
-      attr_accessor :search_name, :group_metadata, :search_metadata, :base_output_dir, :chain_item, :target_identifier
+      attr_accessor :search_name, :group_metadata, :search_metadata, :base_output_dir,
+                    :chain_item, :target_identifier, :suite_config
 
-      def initialize(search_name, group_metadata, search_metadata, base_output_dir, chain_item, target_identifier)
-        super(search_name, group_metadata, search_metadata, base_output_dir, chain_item)
+      def initialize(search_name, group_metadata, search_metadata, base_output_dir,
+                     chain_item, target_identifier, suite_config)
+        super(search_name, group_metadata, search_metadata, base_output_dir, chain_item,
+              suite_config)
         self.target_identifier = target_identifier
       end
 
       def test_id
-        "au_core_#{group_metadata.reformatted_version}_#{profile_identifier}_#{search_identifier}_#{target_identifier[:display].downcase}_chain_search_test"
+        "#{suite_config[:test_id_prefix]}_#{group_metadata.reformatted_version}_#{profile_identifier}_#{search_identifier}_#{target_identifier[:display].downcase}_chain_search_test"
       end
 
       def class_name

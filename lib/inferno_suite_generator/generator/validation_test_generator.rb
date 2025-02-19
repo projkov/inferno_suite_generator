@@ -7,27 +7,28 @@ module InfernoSuiteGenerator
   class Generator
     class ValidationTestGenerator
       class << self
-        def generate(ig_metadata, base_output_dir)
+        def generate(ig_metadata, base_output_dir, suite_config)
           ig_metadata.groups
                      .reject { |group| SpecialCases.exclude_group? group }
                      .each do |group|
-            new(group, base_output_dir:).generate
+            new(group, base_output_dir:, suite_config:).generate
             next unless group.resource == 'MedicationRequest'
 
             # The Medication validation test lives in the MedicationRequest
             # group, so we need to pass in that group's metadata
             medication_group_metadata = ig_metadata.groups.find { |group| group.resource == 'Medication' }
-            new(medication_group_metadata, group, base_output_dir:).generate
+            new(medication_group_metadata, group, base_output_dir:, suite_config:).generate
           end
         end
       end
 
-      attr_accessor :group_metadata, :medication_request_metadata, :base_output_dir
+      attr_accessor :group_metadata, :medication_request_metadata, :base_output_dir, :suite_config
 
-      def initialize(group_metadata, medication_request_metadata = nil, base_output_dir:)
+      def initialize(group_metadata, medication_request_metadata = nil, base_output_dir:, suite_config:)
         self.group_metadata = group_metadata
         self.medication_request_metadata = medication_request_metadata
         self.base_output_dir = base_output_dir
+        self.suite_config = suite_config
       end
 
       def template
@@ -71,7 +72,7 @@ module InfernoSuiteGenerator
       end
 
       def test_id
-        "au_core_#{group_metadata.reformatted_version}_#{profile_identifier}_validation_test"
+        "#{suite_config[:test_id_prefix]}_#{group_metadata.reformatted_version}_#{profile_identifier}_validation_test"
       end
 
       def class_name
@@ -79,7 +80,11 @@ module InfernoSuiteGenerator
       end
 
       def module_name
-        "AUCore#{group_metadata.reformatted_version.upcase}"
+        "#{suite_config[:test_module_name]}#{group_metadata.reformatted_version.upcase}"
+      end
+
+      def test_kit_module_name
+        suite_config[:test_kit_module_name]
       end
 
       def resource_type

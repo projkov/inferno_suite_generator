@@ -8,24 +8,28 @@ module InfernoSuiteGenerator
   class Generator
     class MultipleAndSearchTestGenerator
       class << self
-        def generate(ig_metadata, base_output_dir)
+        def generate(ig_metadata, base_output_dir, suite_config)
           ig_metadata.groups
                      .select { |group| group.searches.present? }
                      .each do |group|
             group.search_definitions.each_key do |search_key|
-              new(search_key.to_s, group, group.search_definitions[search_key], base_output_dir).generate if group.search_definitions[search_key].key?(:multiple_and) && search_key.to_s != 'patient'
+              new(search_key.to_s, group, group.search_definitions[search_key],
+                  base_output_dir, suite_config).generate if group.search_definitions[search_key].key?(:multiple_and) && search_key.to_s != 'patient'
             end
           end
         end
       end
 
-      attr_accessor :search_name, :group_metadata, :search_metadata, :base_output_dir
+      attr_accessor :search_name, :group_metadata, :search_metadata, :base_output_dir,
+                    :suite_config
 
-      def initialize(search_name, group_metadata, search_metadata, base_output_dir)
+      def initialize(search_name, group_metadata, search_metadata, base_output_dir,
+                     suite_config)
         self.search_name = search_name
         self.group_metadata = group_metadata
         self.search_metadata = search_metadata
         self.base_output_dir = base_output_dir
+        self.suite_config = suite_config
       end
 
       def template
@@ -53,7 +57,7 @@ module InfernoSuiteGenerator
       end
 
       def test_id
-        "au_core_#{group_metadata.reformatted_version}_#{profile_identifier}_#{search_identifier}_multiple_and_search_test"
+        "#{suite_config[:test_id_prefix]}_#{group_metadata.reformatted_version}_#{profile_identifier}_#{search_identifier}_multiple_and_search_test"
       end
 
       def search_identifier
@@ -69,7 +73,11 @@ module InfernoSuiteGenerator
       end
 
       def module_name
-        "AUCore#{group_metadata.reformatted_version.upcase}"
+        "#{suite_config[:test_module_name]}#{group_metadata.reformatted_version.upcase}"
+      end
+
+      def test_kit_module_name
+        suite_config[:test_kit_module_name]
       end
 
       def resource_type

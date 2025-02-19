@@ -7,18 +7,19 @@ module InfernoSuiteGenerator
   class Generator
     class ReferenceResolutionTestGenerator
       class << self
-        def generate(ig_metadata, base_output_dir)
+        def generate(ig_metadata, base_output_dir, suite_config)
           ig_metadata.groups
                      .reject { |group| SpecialCases.exclude_group? group }
-                     .each { |group| new(group, base_output_dir).generate }
+                     .each { |group| new(group, base_output_dir, suite_config).generate }
         end
       end
 
-      attr_accessor :group_metadata, :base_output_dir
+      attr_accessor :group_metadata, :base_output_dir, :suite_config
 
-      def initialize(group_metadata, base_output_dir)
+      def initialize(group_metadata, base_output_dir, suite_config)
         self.group_metadata = group_metadata
         self.base_output_dir = base_output_dir
+        self.suite_config = suite_config
       end
 
       def template
@@ -46,7 +47,7 @@ module InfernoSuiteGenerator
       end
 
       def test_id
-        "au_core_#{group_metadata.reformatted_version}_#{profile_identifier}_reference_resolution_test"
+        "#{suite_config[:test_id_prefix]}_#{group_metadata.reformatted_version}_#{profile_identifier}_reference_resolution_test"
       end
 
       def class_name
@@ -54,7 +55,11 @@ module InfernoSuiteGenerator
       end
 
       def module_name
-        "AUCore#{group_metadata.reformatted_version.upcase}"
+        "#{suite_config[:test_module_name]}#{group_metadata.reformatted_version.upcase}"
+      end
+
+      def test_kit_module_name
+        suite_config[:test_kit_module_name]
       end
 
       def resource_type
