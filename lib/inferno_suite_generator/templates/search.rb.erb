@@ -3,7 +3,7 @@ require 'inferno_suite_generator/search_test_properties'
 require 'inferno_suite_generator/generator/group_metadata'
 require 'inferno_suite_generator/helpers'
 
-module AUCoreTestKit
+module <%= test_kit_module_name %>
   module <%= module_name %>
     class <%= class_name %> < Inferno::Test
       include InfernoSuiteGenerator::SearchTest
