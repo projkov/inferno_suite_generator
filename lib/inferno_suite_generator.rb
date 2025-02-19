@@ -25,24 +25,24 @@ require_relative "inferno_suite_generator/version"
 module InfernoSuiteGenerator
   class Generator
     def self.generate(ig_folder, filepath_to_include, output_dir,
-                      module_name, test_id_prefix, test_kit_module_name)
+                      test_module_name, test_id_prefix, test_kit_module_name)
       ig_packages = Dir.glob(File.join(Dir.pwd, 'lib', ig_folder, 'igs', '*.tgz'))
 
       ig_packages.each do |ig_package|
         new(ig_package, filepath_to_include, output_dir,
-            module_name, test_id_prefix, test_kit_module_name).generate
+            test_module_name, test_id_prefix, test_kit_module_name).generate
       end
     end
 
     attr_accessor :ig_resources, :ig_metadata, :ig_file_name, :filepath_to_include,
-                  :output_dir, :module_name, :test_id_prefix, :test_kit_module_name
+                  :output_dir, :test_module_name, :test_id_prefix, :test_kit_module_name
 
     def initialize(ig_file_name, filepath_to_include, output_dir,
-                   module_name, test_id_prefix)
+                   test_module_name, test_id_prefix, test_kit_module_name)
       self.ig_file_name = ig_file_name
       self.filepath_to_include = filepath_to_include
       self.output_dir = output_dir
-      self.module_name = module_name
+      self.test_module_name = test_module_name
       self.test_id_prefix = test_id_prefix
       self.test_kit_module_name = test_kit_module_name
     end
@@ -99,12 +99,14 @@ module InfernoSuiteGenerator
 
     def generate_search_tests
       SearchTestGenerator.generate(ig_metadata, base_output_dir,
-                                   module_name, test_id_prefix,
+                                   test_module_name, test_id_prefix,
                                    test_kit_module_name)
       generate_multiple_or_search_tests
       generate_multiple_and_search_tests
       generate_chain_search_tests
-      generate_special_identifier_search_tests
+      SpecialIdentifierSearchTestGenerator.generate(ig_metadata, base_output_dir,
+                                   test_module_name, test_id_prefix,
+                                   test_kit_module_name)
       generate_special_identifiers_chain_search_tests
     end
 
@@ -126,10 +128,6 @@ module InfernoSuiteGenerator
 
     def generate_chain_search_tests
       ChainSearchTestGenerator.generate(ig_metadata, base_output_dir)
-    end
-
-    def generate_special_identifier_search_tests
-      SpecialIdentifierSearchTestGenerator.generate(ig_metadata, base_output_dir)
     end
 
     def generate_special_identifiers_chain_search_tests

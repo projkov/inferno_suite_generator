@@ -7,25 +7,27 @@ module InfernoSuiteGenerator
   class Generator
     class SearchTestGenerator
       class << self
-        def generate(ig_metadata, base_output_dir, module_name,
+        def generate(ig_metadata, base_output_dir, test_module_name,
                      test_id_prefix, test_kit_module_name)
           ig_metadata.groups
                      .reject { |group| SpecialCases.exclude_group? group }
                      .select { |group| group.searches.present? }
                      .each do |group|
-            group.searches.each { |search| new(group, search, base_output_dir).generate }
+            group.searches.each { |search| new(group, search, base_output_dir,
+                                               test_module_name, test_id_prefix, test_kit_module_name).generate }
           end
         end
       end
 
       attr_accessor :group_metadata, :search_metadata, :base_output_dir,
-                    :module_name, :test_id_prefix, :test_kit_module_name
+                    :test_module_name, :test_id_prefix, :test_kit_module_name
 
-      def initialize(group_metadata, search_metadata, base_output_dir, module_name, test_id_prefix)
+      def initialize(group_metadata, search_metadata, base_output_dir,
+                     test_module_name, test_id_prefix, test_kit_module_name)
         self.group_metadata = group_metadata
         self.search_metadata = search_metadata
         self.base_output_dir = base_output_dir
-        self.module_name = module_name
+        self.test_module_name = test_module_name
         self.test_id_prefix = test_id_prefix
         self.test_kit_module_name = test_kit_module_name
       end
@@ -71,7 +73,7 @@ module InfernoSuiteGenerator
       end
 
       def module_name
-        "#{module_name}#{group_metadata.reformatted_version.upcase}"
+        "#{test_module_name}#{group_metadata.reformatted_version.upcase}"
       end
 
       def resource_type

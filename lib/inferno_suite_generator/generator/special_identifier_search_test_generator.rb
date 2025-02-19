@@ -8,7 +8,8 @@ module InfernoSuiteGenerator
   class Generator
     class SpecialIdentifierSearchTestGenerator < SearchTestGenerator
       class << self
-        def generate(ig_metadata, base_output_dir)
+        def generate(ig_metadata, base_output_dir, test_module_name, test_id_prefix,
+                                   test_kit_module_name)
           ig_metadata.groups.reject { |group| SpecialCases.exclude_group? group }
             .select { |group| ['au_core_patient', 'au_core_practitioner', 'au_core_organization', 'au_core_practitionerrole'].include? group.name }
             .select { |group| group.searches.present? }
@@ -27,17 +28,22 @@ module InfernoSuiteGenerator
                     SpecialCases.organization_au_identifiers
                   end
                 identifier_arr.each do |special_identifier|
-                  new(group, search, base_output_dir, special_identifier).generate
+                  new(group, search, base_output_dir, test_module_name, test_id_prefix,
+                                   test_kit_module_name, special_identifier).generate
                 end
               end
           end
         end
       end
 
-      attr_accessor :group_metadata, :search_metadata, :base_output_dir, :special_identifier
+      attr_accessor :group_metadata, :search_metadata, :base_output_dir,
+                    :test_module_name, :test_id_prefix, :test_kit_module_name,
+                    :special_identifier
 
-      def initialize(group_metadata, search_metadata, base_output_dir, special_identifier)
-        super(group_metadata, search_metadata, base_output_dir)
+      def initialize(group_metadata, search_metadata, base_output_dir, test_module_name, test_id_prefix,
+                                   test_kit_module_name, special_identifier)
+        super(group_metadata, search_metadata, base_output_dir,
+              test_module_name, test_id_prefix, test_kit_module_name)
         self.special_identifier = special_identifier
       end
 
